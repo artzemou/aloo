@@ -69,6 +69,6 @@ ul, li
 		margin: auto
 
 .user:hover
-	background: #F3F3F3
+	background: #F5F5F5
 
 </style>

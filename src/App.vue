@@ -7,6 +7,7 @@
   <div id="wrap">
     <Users @clicked="clicked"/>
     <Chat :user="user"/>
+
   </div>
 </section>
 </template>
@@ -24,7 +25,7 @@ $color: #FF9800
 
 body
     margin: 0
-    background-color: #F5F5F5
+    font-size: 15px
     font-family: Helvetica Neue, Segoe UI, Helvetica, Arial, sans-serif
     line-height: 1.28
     overflow: hidden
@@ -78,6 +79,9 @@ export default {
     methods: {
       clicked(user) {
         this.user = user
+      },
+      onInput(event) {
+          //event.data contains the value of the textarea
       }
     }
 }

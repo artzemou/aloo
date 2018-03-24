@@ -2,28 +2,15 @@
 <template>
   <div id="chat">
     <main class="wrapper ai-window">
-        <!-- Display Welcome Message -->
-        <!--<div v-if="answers.length == 0 && online == true">
-            <h1 class="title mdc-typography--headline">
-                <div class="material-icons up">arrow_upward</div>
-                <br>
-                <br>
-                    Hello, ask something to get started
-
-                    <p class="mdc-typography--body2">You can type "Hello" for example. Or just press on the microphone to talk</p>
-                    <p class="copyright">?????</p>
-            </h1>
-        </div>-->
-
         <!-- Display offline message -->
         <div v-if="answers.length == 0 && online == false">
             <h1 class="title mdc-typography--headline">
                 <div class="material-icons up">cloud_off</div>
                 <br>
                 <br>
-                    Oh, no!
+                    Oh, non!
 
-                    <p class="mdc-typography--body2">It looks like you are not connected to the internet, this webpage <b>requires</b> internet connection, to process your requests</p>
+                    <p class="mdc-typography--body2">Il semble que vous n'êtes pas connecté à Internet, cette page Web nécessite une connexion Internet, pour traiter vos demandes</p>
             </h1>
         </div>
 
@@ -31,7 +18,23 @@
         <table v-for="a in answers" class="chat-window">
 
             <!-- Your messages -->
-            <tr>
+            <tr v-if="a.result.resolvedQuery == ':)'">
+              <td class="emoji">
+                  <img alt="" src="./1f642.png"/>
+              </td>
+            </tr>
+            <tr v-else-if="a.result.resolvedQuery == '=)'">
+              <td class="emoji">
+                  <img alt="" src="./1f60a.png"/>
+              </td>
+            </tr>
+
+            <tr v-else-if="a.result.resolvedQuery == ':('">
+              <td class="emoji">
+                  <img alt="" src="./1f61e.png"/>
+              </td>
+            </tr>
+            <tr v-else>
                 <td class="bubble">{{a.result.resolvedQuery}}</td>
             </tr>
 
@@ -39,110 +42,179 @@
             <tr>
                 <td>
 
-                    <!-- Bot message types / Speech -->
-
+                    <!-- Bot message -->
                     <div v-if="a.result.fulfillment.speech" class="bubble bot">
                         {{a.result.fulfillment.speech}}
-                    </div>
-
-                    <!-- Google Assistant output -->
-                    <div v-for="r in a.result.fulfillment.messages">
-
-                        <!-- Bot message types / Card -->
-
-                        <div class="mdc-card" v-if="r.type == 'basic_card'">
-                            <img :title="r.image.accessibilityText" :alt="r.image.accessibilityText" class="mdc-card__media-item" :src="r.image.url" v-if="r.image">
-                            <section class="mdc-card__primary">
-                                <h1 class="mdc-card__title mdc-card__title">{{r.title}}</h1>
-                                <br>
-                                <h2 class="mdc-card__subtitle">{{r.subtitle}}</h2>
-                            </section>
-                            <section class="mdc-card__supporting-text">
-                                {{r.formattedText}}
-                            </section>
-                            <section class="mdc-card__actions" v-for="button in r.buttons">
-                                <a class="mdc-button mdc-button--compact mdc-button--primary mdc-card__action" target="_blank" :href="button.openUrlAction.url">{{button.title}} <i class="material-icons openlink">open_in_new</i></a>
-                            </section>
-                        </div>
-
-                        <!-- Bot message types / Carousel Card -->
-
-                        <div class="slider" v-if="r.type == 'carousel_card'">
-                            <carousel
-                                    :perPage="1"
-                                    :navigationEnabled="true"
-                                    :paginationEnabled="false"
-                                    navigationNextLabel="<button class='mdc-fab material-icons rightnav'><span class='mdc-fab__icon'>keyboard_arrow_right</span></button>"
-                                    navigationPrevLabel="<button class='mdc-fab material-icons leftnav'><span class='mdc-fab__icon'>keyboard_arrow_left</span></button>"
-                                    :navigationClickTargetSize="0"
-                                    :loop="true">
-
-                                <slide v-for="item in r.items" :key="item.id">
-                                    <div class="mdc-card slide">
-                                        <img class="mdc-card__media-item" :src="item.image.url" v-if="item.image">
-                                        <section class="mdc-card__primary">
-                                            <h1 class="mdc-card__title mdc-card__title mdc-theme--primary" @click="autosubmit(item.optionInfo.key)">{{item.title}}</h1>
-                                        </section>
-                                        <section class="mdc-card__supporting-text">
-                                            {{item.description}}
-                                        </section>
-                                    </div>
-                                </slide>
-                            </carousel>
-                        </div>
-
-                        <!-- Bot message types / List -->
-
-                        <div class="mdc-list-group mdc-card" v-if="r.type == 'list_card'">
-                            <h3 class="mdc-list-group__subheader">{{r.title}}</h3>
-                            <ul class="mdc-list mdc-list--two-line mdc-list--avatar-list" v-for="item in r.items" @click="autosubmit(item.optionInfo.key)">
-                                <li class="mdc-list-item">
-                                    <img :title="item.image.accessibilityText" :alt="item.image.accessibilityText" class="mdc-list-item__start-detail" width="56" height="56" :src="item.image.url" v-if="item.image"/>
-                                    <span class="mdc-list-item__text">
-                                        {{item.title}}
-                                    <span class="mdc-list-item__text__secondary">{{item.description}}</span>
-                                    </span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <!-- Bot message types / Link Chip -->
-
-                        <div v-if="r.type == 'link_out_chip'" class="chips">
-                            <a class="suggestion link" :href="r.url" target="_blank">
-                                {{r.destinationName}} <i class="material-icons openlink">open_in_new</i>
-                            </a>
-                        </div>
-
-                        <!-- Bot message types / Suggestion Chip -->
-
-                        <div v-if="r.type == 'suggestion_chips'" class="chips">
-                            <div class="suggestion" @click="autosubmit(s.title)" v-for="s in r.suggestions">
-                                {{s.title}}
-                            </div>
-                        </div>
-
                     </div>
                 </td>
             </tr>
         </table>
         <br>
-        <p class="copyright" v-if="answers.length > 0" id="bottom">lorem</p>
+        <p v-if="answers.length > 0" id="bottom"></p>
     </main>
     <!-- The input -->
     <div class="query">
         <div class="wrapper" v-if="micro == false">
             <i class="material-icons iicon" @click="microphone(true)">mic</i>
-            <input aria-label="Ask me something" autocomplete="off" v-model="query" class="queryform" @keyup.enter="submit()" placeholder="Ask me something..." autofocus type="text">
+            <input aria-label="Écrivez un message..." autocomplete="off" v-model="query" class="queryform"  @keyup.enter="submit()" placeholder="Écrivez un message..." autofocus type="text">
+
             <i class="material-icons iicon t2s" @click="mute(true)" v-if="muted == false">volume_up</i>
             <i class="material-icons iicon t2s" @click="mute(false)" v-else>volume_off</i>
+
+
         </div>
         <div class="wrapper" v-else>
             <i class="material-icons iicon recording" @click="microphone(false)">mic</i><input class="queryform" :placeholder="speech" readonly>
         </div>
+        <div>
+          <i class="material-icons iicon t2s">tag_faces</i>
+        </div>
+
+
     </div>
   </div>
 </template>
+
+
+<script>
+import Emoji from './Emoji.vue'
+import { ApiAiClient } from 'api-ai-javascript'
+const client = new ApiAiClient({accessToken: 'f0e65dc0f2614efd8844fc233f19ba28'}) // <- replace it with yours
+
+export default {
+    name: 'chat',
+    components:{
+      Emoji
+    },
+    mounted(){
+      this.loadDataStorage()
+    },
+    props:['user'],
+    data: () => {
+        return {
+            answers: [],
+            data:[],
+            query: '',
+            speech: 'Dites quelque chose...',
+            micro: false,
+            muted: true,
+            online: navigator.onLine
+        }
+    },
+    watch: {
+        answers: function(val){
+            setTimeout(() => {
+                if(document.querySelector('#bottom') !== null){
+                  document.querySelector('#bottom').scrollIntoView({
+                      behavior: 'smooth'
+                  })
+                }
+            }, 2) // if new answers arrive, wait for render and then smoothly scroll down to .copyright selector, used as anchor
+        },
+        user: function(newVal, oldVal) { // watch it
+          this.answers = []
+          let data = JSON.parse(localStorage.getItem("data"))
+          if(data !== null){
+            let self = this
+            self.data = data
+            if(data[this.user]){
+              data[this.user].forEach(function(element) {
+                  client.textRequest(element).then((response) => {
+                      self.answers.push(response)
+                      self.handle(response) // <- handle the response in handle() method
+
+                  })
+              });
+            }
+          }
+        },
+        query: function(newVal, oldVal){
+          console.log(newVal)
+
+        }
+    },
+    methods: {
+        submit(){
+          if(this.query !== ''){
+
+            if (this.data[this.user] === undefined || this.data[this.user] === null) this.data[this.user] = []
+            console.log(this.data[this.user])
+            this.data[this.user].push(this.query)
+            localStorage.setItem("data", JSON.stringify(this.data))
+
+            client.textRequest(this.query).then((response) => {
+
+                this.answers.push(response)
+                this.handle(response) // <- handle the response in handle() method
+
+                this.query = ''
+                this.speech = 'Go ahead, im listening...' // <- reset query and speech
+            })
+          }
+
+        },
+        loadDataStorage(){
+          let data = JSON.parse(localStorage.getItem("data"))
+          if(data !== null){
+            this.data = data
+            let self = this
+            data[this.user].forEach(function(element) {
+                client.textRequest(element).then((response) => {
+                    self.answers.push(response)
+                    self.handle(response) // <- handle the response in handle() method
+
+                })
+            });
+          }
+        },
+        handle(response){
+            if(response.result.fulfillment.speech || response.result.fulfillment.messages[0].type == 'simple_response'){
+
+                let speech = new SpeechSynthesisUtterance(response.result.fulfillment.speech || response.result.fulfillment.messages[0].textToSpeech)
+                speech.voiceURI = 'native'
+                speech.lang = 'en-GB' // <- Nice british accent
+
+                if(this.muted == false) window.speechSynthesis.speak(speech) // <- Speech output if microphone is allowed
+
+            }
+        },
+        autosubmit(suggestion){
+            this.query = suggestion
+            this.submit()
+        },
+        mute(mode){
+            this.muted = mode
+        },
+        microphone(mode){
+            this.micro = mode
+            let self = this // <- correct scope
+
+            if(mode == true){
+                let recognition = new webkitSpeechRecognition() // <- chrome speech recognition
+
+                recognition.interimResults = true
+                recognition.lang = 'en-US'
+			          recognition.start()
+
+                recognition.onresult = function(event){
+        			        for (var i = event.resultIndex; i < event.results.length; ++i){
+        			    	    self.speech = event.results[i][0].transcript
+        			        }
+      			    }
+
+      			    recognition.onend = function(){
+      				    recognition.stop()
+                          self.micro = false
+                          self.autosubmit(self.speech)
+      			    }
+            }
+        },
+        someHandler : function(){
+          console.log('?')
+        }
+    }
+}
+</script>
 
 <style lang="sass">
 @import url('https://fonts.googleapis.com/css?family=Roboto')
@@ -183,7 +255,9 @@ $color: #FF9800
     position: fixed
     width: 80%
     bottom: 0
-    background-color: #F5F5F5
+    background-color: #ffffff
+    font-size: 14px
+    height: 83px
 
 .queryform
     border: 0
@@ -193,7 +267,7 @@ $color: #FF9800
     outline: none
     color: rgba(0,0,0,0.8)
     font-weight: 500
-    background-color: #F5F5F5
+    background-color: #ffffff
 
     @media screen and (max-width: 320px)
         width: 100% - 35%
@@ -209,7 +283,7 @@ $color: #FF9800
     color: #F44336
 
 .iicon.t2s
-    margin-left: 10px
+    margin-left: 10pxsomeHandler
     margin-right: 20px
 
     @media screen and (max-width: 720px)
@@ -222,10 +296,9 @@ $color: #FF9800
     max-width: 300px
     background-color: #0084ff
     padding: 16px
-    border-radius: 8px
+    border-radius: 13px
     color: #ffffff
     float: right
-    animation: msg .25s linear
 
 .bubble.bot
     background-color: #e6e6e6
@@ -234,10 +307,13 @@ $color: #FF9800
     margin-right: 10px
     margin-left: 10px
     opacity: 0
+    animation: msg .25s linear
     animation-delay: .75s
     animation-fill-mode: forwards
 
-
+.emoji
+  float: right
+  padding: 16px
 
 td
     margin-top: 30px
@@ -344,136 +420,3 @@ td
     border-bottom: 2px solid $color
 
 </style>
-
-<script>
-import { ApiAiClient } from 'api-ai-javascript'
-const client = new ApiAiClient({accessToken: 'f0e65dc0f2614efd8844fc233f19ba28'}) // <- replace it with yours
-
-export default {
-    name: 'chat',
-    mounted(){
-      this.loadDataStorage()
-    },
-    props:['user'],
-    data: () => {
-        return {
-            answers: [],
-            data:[],
-            query: '',
-            speech: 'Go ahead, im listening....',
-            micro: false,
-            muted: true,
-            online: navigator.onLine
-        }
-    },
-    watch: {
-        answers: function(val){
-            setTimeout(() => {
-                if(document.querySelector('.copyright') !== null){
-                  document.querySelector('.copyright').scrollIntoView({
-                      behavior: 'smooth'
-                  })
-                }
-            }, 2) // if new answers arrive, wait for render and then smoothly scroll down to .copyright selector, used as anchor
-        },
-        user: function(newVal, oldVal) { // watch it
-          this.answers = []
-          let data = JSON.parse(localStorage.getItem("data"))
-          console.log(this.user)
-          if(data !== null){
-            let self = this
-            self.data = data
-            if(data[this.user]){
-              data[this.user].forEach(function(element) {
-                  client.textRequest(element).then((response) => {
-                      self.answers.push(response)
-                      self.handle(response) // <- handle the response in handle() method
-
-                  })
-              });
-            }
-          }
-          console.log(this.answers)
-          console.log('Prop changed: ', newVal, ' | was: ', oldVal)
-
-        }
-    },
-    methods: {
-        submit(){
-          if(this.query !== ''){
-
-            if (this.data[this.user] === undefined || this.data[this.user] === null) this.data[this.user] = []
-            console.log(this.data[this.user])
-            this.data[this.user].push(this.query)
-            localStorage.setItem("data", JSON.stringify(this.data))
-
-            client.textRequest(this.query).then((response) => {
-
-                this.answers.push(response)
-                this.handle(response) // <- handle the response in handle() method
-
-                this.query = ''
-                this.speech = 'Go ahead, im listening...' // <- reset query and speech
-            })
-          }
-
-        },
-        loadDataStorage(){
-          let data = JSON.parse(localStorage.getItem("data"))
-          if(data !== null){
-            this.data = data
-            let self = this
-            data[this.user].forEach(function(element) {
-                client.textRequest(element).then((response) => {
-                    self.answers.push(response)
-                    self.handle(response) // <- handle the response in handle() method
-
-                })
-            });
-          }
-        },
-        handle(response){
-            if(response.result.fulfillment.speech || response.result.fulfillment.messages[0].type == 'simple_response'){
-
-                let speech = new SpeechSynthesisUtterance(response.result.fulfillment.speech || response.result.fulfillment.messages[0].textToSpeech)
-                speech.voiceURI = 'native'
-                speech.lang = 'en-GB' // <- Nice british accent
-
-                if(this.muted == false) window.speechSynthesis.speak(speech) // <- Speech output if microphone is allowed
-
-            }
-        },
-        autosubmit(suggestion){
-            this.query = suggestion
-            this.submit()
-        },
-        mute(mode){
-            this.muted = mode
-        },
-        microphone(mode){
-            this.micro = mode
-            let self = this // <- correct scope
-
-            if(mode == true){
-                let recognition = new webkitSpeechRecognition() // <- chrome speech recognition
-
-                recognition.interimResults = true
-                recognition.lang = 'en-US'
-			          recognition.start()
-
-                recognition.onresult = function(event){
-        			        for (var i = event.resultIndex; i < event.results.length; ++i){
-        			    	    self.speech = event.results[i][0].transcript
-        			        }
-      			    }
-
-      			    recognition.onend = function(){
-      				    recognition.stop()
-                          self.micro = false
-                          self.autosubmit(self.speech)
-      			    }
-            }
-        }
-    }
-}
-</script>
