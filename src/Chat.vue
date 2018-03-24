@@ -18,24 +18,31 @@
         <table v-for="a in answers" class="chat-window">
 
             <!-- Your messages -->
-            <tr v-if="a.result.resolvedQuery == ':)'">
+            <tr v-if="a.response.result.resolvedQuery == ':)'">
+
               <td class="emoji">
-                  <img alt="" src="./1f642.png"/>
+                  <img alt="" src="img/1f642.png"/>
+                  {{a.timestamp}}
               </td>
             </tr>
-            <tr v-else-if="a.result.resolvedQuery == '=)'">
+            <tr v-else-if="a.response.result.resolvedQuery == '=)'">
               <td class="emoji">
-                  <img alt="" src="./1f60a.png"/>
+                  <img alt="" src="img/1f60a.png"/>
+                  {{a.timestamp}}
               </td>
             </tr>
 
-            <tr v-else-if="a.result.resolvedQuery == ':('">
+            <tr v-else-if="a.response.result.resolvedQuery == ':('">
               <td class="emoji">
-                  <img alt="" src="./1f61e.png"/>
+                  <img alt="" src="img/1f61e.png"/>
+                  {{a.timestamp}}
               </td>
             </tr>
             <tr v-else>
-                <td class="bubble">{{a.result.resolvedQuery}}</td>
+                <td class="bubble">
+                    {{a.response.result.resolvedQuery}}<br>
+                    {{a.timestamp}}
+                  </td>
             </tr>
 
             <!-- Dialogflow messages -->
@@ -43,9 +50,11 @@
                 <td>
 
                     <!-- Bot message -->
-                    <div v-if="a.result.fulfillment.speech" class="bubble bot">
-                        {{a.result.fulfillment.speech}}
+                    <div v-if="a.response.result.fulfillment.speech" class="bubble bot">
+                        {{a.response.result.fulfillment.speech}}<br>
+                        {{a.timestamp}}
                     </div>
+
                 </td>
             </tr>
         </table>
@@ -112,15 +121,17 @@ export default {
             }, 2) // if new answers arrive, wait for render and then smoothly scroll down to .copyright selector, used as anchor
         },
         user: function(newVal, oldVal) { // watch it
+        console.log(this.user)
           this.answers = []
           let data = JSON.parse(localStorage.getItem("data"))
           if(data !== null){
             let self = this
             self.data = data
-            if(data[this.user]){
+            if(data[this.user] !== null && data[this.user] !== undefined){
               data[this.user].forEach(function(element) {
-                  client.textRequest(element).then((response) => {
-                      self.answers.push(response)
+                  let timestamp = element.timestamp
+                  client.textRequest(element.query).then((response) => {
+                      self.answers.push({response: response, timestamp: timestamp})
                       self.handle(response) // <- handle the response in handle() method
 
                   })
@@ -139,12 +150,12 @@ export default {
 
             if (this.data[this.user] === undefined || this.data[this.user] === null) this.data[this.user] = []
             console.log(this.data[this.user])
-            this.data[this.user].push(this.query)
+            this.data[this.user].push({query: this.query, timestamp: new Date().toLocaleString()})
             localStorage.setItem("data", JSON.stringify(this.data))
 
             client.textRequest(this.query).then((response) => {
 
-                this.answers.push(response)
+                this.answers.push({response: response, timestamp: new Date().toLocaleString()})
                 this.handle(response) // <- handle the response in handle() method
 
                 this.query = ''
@@ -158,13 +169,18 @@ export default {
           if(data !== null){
             this.data = data
             let self = this
-            data[this.user].forEach(function(element) {
-                client.textRequest(element).then((response) => {
-                    self.answers.push(response)
-                    self.handle(response) // <- handle the response in handle() method
+            if(data[this.user] !== undefined){
 
-                })
-            });
+              data[this.user].forEach(function(element) {
+                  let timestamp = element.timestamp
+                  client.textRequest(element.query).then((response) => {
+                      self.answers.push({response:response, timestamp: timestamp})
+                      console.log(self.answers)
+                      self.handle(response) // <- handle the response in handle() method
+
+                  })
+              });
+            }
           }
         },
         handle(response){

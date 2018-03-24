@@ -1,15 +1,15 @@
 <template>
-<section id ="app">
-  <div id="header">
-    <div class="_1tqi">Messenger</div>
-    <div class="_673w" >{{user}}</div>
-  </div>
-  <div id="wrap">
-    <Users @clicked="clicked"/>
-    <Chat :user="user"/>
+  <section id ="app">
+    <div id="header">
+      <div class="_1tqi">Messenger</div>
+      <div class="_673w" >{{email}}</div>
+    </div>
+    <div id="wrap">
+      <Users @clicked="clicked"/>
+      <Chat :user="user"/>
 
-  </div>
-</section>
+    </div>
+  </section>
 </template>
 
 <style lang="sass">
@@ -32,22 +32,25 @@ body
     text-rendering: optimizeLegibility
 
 #header
-  display: flex
-  text-align: center
-  border-bottom: 1px solid #d9d9d9
+    display: flex
+    text-align: center
+    border-bottom: 1px solid #d9d9d9
 
 ._1tqi
-  width: 25%
-  padding: 1rem
-  border-right: 1px solid #d9d9d9
+    width: 25%
+    padding: 1rem
+    border-right: 1px solid #d9d9d9
+
+    @media screen and (max-width: 720px)
+      width: 74px
 
 ._673w
-  flex: 1
-  margin: auto
+    flex: 1
+    margin: auto
 
 #wrap
-  display: flex
-  height: calc(100vh - 53px)
+    display: flex
+    height: calc(100vh - 53px)
 
 
 
@@ -70,6 +73,7 @@ export default {
     data: function(){
         return {
             user: 0,
+            email: 'lorem@ipsum.com'
 
         }
     },
@@ -77,8 +81,9 @@ export default {
 
     },
     methods: {
-      clicked(user) {
+      clicked(user, email) {
         this.user = user
+        this.email = email
       },
       onInput(event) {
           //event.data contains the value of the textarea

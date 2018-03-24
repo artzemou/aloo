@@ -1,7 +1,7 @@
 <template>
 	<ul id="users">
 		<li  v-for="(user, index) in users">
-			<ul class="user" @click="clicked(index)">
+			<ul class="user" @click="clicked(index, user.email)">
 					<li class="avatar"></li>
 					<li class="name">{{ user.email }}</li>
 			</ul>
@@ -33,14 +33,14 @@ export default {
     }
 	 },
 	 methods: {
-			clicked(user) {
-	      this.$emit('clicked', user);
+			clicked(user, email) {
+	      this.$emit('clicked', user, email);
 	    }
 
 	 }
 }
 </script>
-<!-- Add "scoped" attribute to limit CSS to this component only -->
+
 <style lang="sass">
 ul, li
 	padding:  0
@@ -51,22 +51,40 @@ ul, li
 	width: 25%
 	border-right: 1px solid #d9d9d9
 
+	@media screen and (max-width: 720px)
+		width: 74px
+
 .user
-	padding: 1rem
+	padding: .5rem
 	border-bottom: 1px solid #d9d9d9
 	text-align: center
 	display: flex
 	margin: auto
+	@media screen and (max-width: 720px)
+		padding: 0
+		height: 64px
+		display: flex
 
 	.avatar
-		width: 50px
+		min-width: 50px
 		height: 50px
 		border-radius: 50%
-		background: #0084ff
+		background: #d9d9d9
+		@media screen and (max-width: 720px)
+			margin: auto
 
 	.name
-		display: inline-flex
+		flex: 1 1 0%
+		min-width: 0
+		overflow: hidden
+		text-overflow: ellipsis
+		white-space: nowrap
 		margin: auto
+		padding-left: .5rem
+		text-align: left
+
+		@media screen and (max-width: 720px)
+			display: none
 
 .user:hover
 	background: #F5F5F5
