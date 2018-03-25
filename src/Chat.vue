@@ -16,32 +16,18 @@
 
         <!-- Chat window -->
         <table v-for="a in answers" class="chat-window">
-
             <!-- Your messages -->
-            <tr v-if="a.response.result.resolvedQuery == ':)'">
-
+            <tr v-if="emoji.indexOf(a.response.result.resolvedQuery) !== -1">
               <td class="emoji">
-                  <img alt="" src="img/1f642.png"/>
-                  {{a.timestamp}}
-              </td>
-            </tr>
-            <tr v-else-if="a.response.result.resolvedQuery == '=)'">
-              <td class="emoji">
-                  <img alt="" src="img/1f60a.png"/>
-                  {{a.timestamp}}
+                  <Emoji :emoji='emoji.indexOf(a.response.result.resolvedQuery)' :src='emojiImgSrc'/>
+                  <span class="timestamp">{{a.timestamp}}</span>
               </td>
             </tr>
 
-            <tr v-else-if="a.response.result.resolvedQuery == ':('">
-              <td class="emoji">
-                  <img alt="" src="img/1f61e.png"/>
-                  {{a.timestamp}}
-              </td>
-            </tr>
             <tr v-else>
                 <td class="bubble">
-                    {{a.response.result.resolvedQuery}}<br>
-                    {{a.timestamp}}
+                    <span v-html="removeSmiley(a.response.result.resolvedQuery)"></span><br>
+                    <span class="timestamp">{{a.timestamp}}</span>
                   </td>
             </tr>
 
@@ -52,7 +38,7 @@
                     <!-- Bot message -->
                     <div v-if="a.response.result.fulfillment.speech" class="bubble bot">
                         {{a.response.result.fulfillment.speech}}<br>
-                        {{a.timestamp}}
+                        <span class="timestamp">{{a.timestamp}}</span>
                     </div>
 
                 </td>
@@ -73,11 +59,18 @@
 
         </div>
         <div class="wrapper" v-else>
-            <i class="material-icons iicon recording" @click="microphone(false)">mic</i><input class="queryform" :placeholder="speech" readonly>
+
+            <input class="queryform" :placeholder="speech" readonly>
         </div>
-        <div>
-          <i class="material-icons iicon t2s">tag_faces</i>
+        <div class="_4rv4">
+          <i class="material-icons iiicon">tag_faces</i>
+          <ul v-for="(src, index) in emojiImgSrc">
+            <li >
+              <img v-on:click="query = emoji[index]" alt="" :src="`img/${src}.png`"/>
+            </li>
+          </ul>
         </div>
+
 
 
     </div>
@@ -107,7 +100,10 @@ export default {
             speech: 'Dites quelque chose...',
             micro: false,
             muted: true,
-            online: navigator.onLine
+            online: navigator.onLine,
+            emoji: [':)', '=)', ':(', ';)'],
+            emojiImgSrc: ['1f642', '1f60a', '1f61e', '1f609']
+
         }
     },
     watch: {
@@ -121,7 +117,6 @@ export default {
             }, 2) // if new answers arrive, wait for render and then smoothly scroll down to .copyright selector, used as anchor
         },
         user: function(newVal, oldVal) { // watch it
-        console.log(this.user)
           this.answers = []
           let data = JSON.parse(localStorage.getItem("data"))
           if(data !== null){
@@ -140,16 +135,24 @@ export default {
           }
         },
         query: function(newVal, oldVal){
-          console.log(newVal)
+          if(newVal.length > 1){
+            this.emoji.indexOf(newVal) !== -1 ? this.submit() : null
+          }
 
         }
     },
     methods: {
+        removeSmiley(str){
+            this.emoji.forEach(function(element) {
+              str = str.replace(element, '<img class="small-emoji" alt="" src="img/'+ this.emojiImgSrc[this.emoji.indexOf(element)] +'.png">')
+            }, this)
+            return str
+
+        },
         submit(){
           if(this.query !== ''){
 
             if (this.data[this.user] === undefined || this.data[this.user] === null) this.data[this.user] = []
-            console.log(this.data[this.user])
             this.data[this.user].push({query: this.query, timestamp: new Date().toLocaleString()})
             localStorage.setItem("data", JSON.stringify(this.data))
 
@@ -299,7 +302,7 @@ $color: #FF9800
     color: #F44336
 
 .iicon.t2s
-    margin-left: 10pxsomeHandler
+    margin-left: 10px
     margin-right: 20px
 
     @media screen and (max-width: 720px)
@@ -327,9 +330,17 @@ $color: #FF9800
     animation-delay: .75s
     animation-fill-mode: forwards
 
+.small-emoji
+    width: 20px
+    vertical-align: bottom
+    margin: 0 .5rem
+
 .emoji
   float: right
   padding: 16px
+
+.timestamp
+  font-size: 12px
 
 td
     margin-top: 30px
@@ -434,5 +445,12 @@ td
 .copyright a:hover
     color: $color
     border-bottom: 2px solid $color
+
+._4rv4
+    padding: .5rem
+    display: flex
+    flex-direction: row-reverse
+    width: 80%
+
 
 </style>

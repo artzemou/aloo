@@ -1,26 +1,13 @@
 <template>
-  <div>
-
-  </div>
+    <img alt="" :src="`img/${src[emoji]}.png`"/>
 </template>
+
 <script>
 
 export default {
   name:'emoji',
-  components:{
+  props:['emoji','src'],
 
-  },
-  data () {
-
-    return {
-
-    }
-  },
-  methods: {
-    insertSymbol (emoji) {
-
-    }
-  }
 }
 </script>
 <style>
