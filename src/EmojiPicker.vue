@@ -1,6 +1,6 @@
 <template>
-  <div class="picker-container" @click="toggleClass" v-bind:class="{ active: isActive }">
-    <i class="material-icons iiicon">tag_faces</i>
+  <div class="picker-container" v-bind:class="{ active: isActive }">
+    <i class="material-icons iiicon" @click="toggleClass" >tag_faces</i>
     <ul>
       <li v-for="(src, index) in emojiImgSrc">
         <img v-on:click="insertSmiley(index)" alt="" :src="`img/${src}.png`"/>
@@ -31,6 +31,9 @@ export default {
 //query = emoji[index]
 </script>
 <style lang="sass">
+
+.iiicon
+    cursor: pointer
 
 .picker-container
     padding: .5rem

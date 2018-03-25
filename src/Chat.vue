@@ -49,9 +49,28 @@
             </tr>
 
             <!-- Dialogflow messages -->
-            <tr>
+            <tr v-if="a.timestamp === new Date(a.response.timestamp).toLocaleString()">
                 <td>
                     <!-- Bot message -->
+                  <div>
+                    <div v-if="a.response.result.fulfillment.speech" class="bubble bot" v-bind:class="{ animated: animated }">
+                        <div class="delete" @click="deleteBubble(index)">
+                          <i class="material-icons">fiber_manual_record</i>
+                          <i class="material-icons">fiber_manual_record</i>
+                          <i class="material-icons">fiber_manual_record</i>
+                        </div>
+                        <div>
+                          {{a.response.result.fulfillment.speech}}<br>
+                          <span class="timestamp">{{a.timestamp}}</span>
+                        </div>
+                    </div>
+                  </div>
+                </td>
+            </tr>
+            <tr v-else>
+                <td>
+                    <!-- Bot message -->
+                  <div>
                     <div v-if="a.response.result.fulfillment.speech" class="bubble bot">
                         <div class="delete" @click="deleteBubble(index)">
                           <i class="material-icons">fiber_manual_record</i>
@@ -63,7 +82,7 @@
                           <span class="timestamp">{{a.timestamp}}</span>
                         </div>
                     </div>
-
+                  </div>
                 </td>
             </tr>
         </table>
@@ -109,6 +128,10 @@ export default {
     },
     mounted(){
       this.loadDataStorage()
+      setTimeout(() => {
+        this.animated = true
+      }, 1000)
+
     },
     props:['user'],
     data: () => {
@@ -121,7 +144,8 @@ export default {
             muted: true,
             online: navigator.onLine,
             emoji: [':)', '=)', ':(', ';)', ':-p'],
-            emojiImgSrc: ['1f642', '1f60a', '1f61e', '1f609', '1f61b']
+            emojiImgSrc: ['1f642', '1f60a', '1f61e', '1f609', '1f61b'],
+            animated: false
 
         }
     },
@@ -201,16 +225,16 @@ export default {
         loadDataStorage(){
           let data = JSON.parse(localStorage.getItem("data"))
           if(data !== null){
-            this.data = data
             let self = this
+            self.data = data
             if(data[this.user] !== undefined){
-
-              data[this.user].forEach(function(element) {
+              data[this.user].forEach(function(element, index) {
                   let timestamp = element.timestamp
                   client.textRequest(element.query).then((response) => {
                       self.answers.push({response:response, timestamp: timestamp})
                       console.log(self.answers)
                       self.handle(response) // <- handle the response in handle() method
+
 
                   })
               });
@@ -372,14 +396,18 @@ $color: #FF9800
     float: left
     margin-right: 10px
     margin-left: 10px
-    opacity: 0
-    animation: msg .25s linear
-    animation-delay: .75s
-    animation-fill-mode: forwards
 
     .delete
         right: -125px
         left: auto
+
+.bubble.bot.animated
+    opacity: 0
+    transform: scale(0.8)
+    animation: msg .25s linear
+    animation-delay: .75s
+    animation-fill-mode: forwards
+
 
 .bubble:hover
     .delete
