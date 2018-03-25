@@ -8,37 +8,60 @@
                 <div class="material-icons up">cloud_off</div>
                 <br>
                 <br>
-                    Oh, non!
-
-                    <p class="mdc-typography--body2">Il semble que vous n'êtes pas connecté à Internet, cette page Web nécessite une connexion Internet, pour traiter vos demandes</p>
+                Oh, non!
+                <p class="mdc-typography--body2">Il semble que vous n'êtes pas connecté à Internet, cette page Web nécessite une connexion Internet, pour traiter vos demandes</p>
             </h1>
         </div>
 
         <!-- Chat window -->
-        <table v-for="a in answers" class="chat-window">
+        <table v-for="(a, index) in answers" class="chat-window">
             <!-- Your messages -->
             <tr v-if="emoji.indexOf(a.response.result.resolvedQuery) !== -1">
-              <td class="emoji">
-                  <Emoji :emoji='emoji.indexOf(a.response.result.resolvedQuery)' :src='emojiImgSrc'/>
-                  <span class="timestamp">{{a.timestamp}}</span>
+              <td>
+                <div class="emoji">
+                  <div class="delete" @click="deleteBubble(index)">
+                    <i class="material-icons">fiber_manual_record</i>
+                    <i class="material-icons">fiber_manual_record</i>
+                    <i class="material-icons">fiber_manual_record</i>
+                  </div>
+                  <div>
+                    <Emoji :emoji='emoji.indexOf(a.response.result.resolvedQuery)' :src='emojiImgSrc'/>
+                    <span class="timestamp">{{a.timestamp}}</span>
+                  </div>
+                </div>
               </td>
             </tr>
 
             <tr v-else>
-                <td class="bubble">
-                    <span v-html="removeSmiley(a.response.result.resolvedQuery)"></span><br>
-                    <span class="timestamp">{{a.timestamp}}</span>
-                  </td>
+                <td>
+                    <div class="bubble">
+                      <div class="delete" @click="deleteBubble(index)">
+                        <i class="material-icons">fiber_manual_record</i>
+                        <i class="material-icons">fiber_manual_record</i>
+                        <i class="material-icons">fiber_manual_record</i>
+                      </div>
+                      <div>
+                        <span v-html="removeSmiley(a.response.result.resolvedQuery)"></span><br>
+                        <span class="timestamp">{{a.timestamp}}</span>
+                      </div>
+                    </div>
+                </td>
             </tr>
 
             <!-- Dialogflow messages -->
             <tr>
                 <td>
-
                     <!-- Bot message -->
                     <div v-if="a.response.result.fulfillment.speech" class="bubble bot">
-                        {{a.response.result.fulfillment.speech}}<br>
-                        <span class="timestamp">{{a.timestamp}}</span>
+                        <div class="delete" @click="deleteBubble(index)">
+                          <i class="material-icons">fiber_manual_record</i>
+                          <i class="material-icons">fiber_manual_record</i>
+                          <i class="material-icons">fiber_manual_record</i>
+                        </div>
+                        <div>
+                          {{a.response.result.fulfillment.speech}}<br>
+                          <span class="timestamp">{{a.timestamp}}</span>
+                        </div>
                     </div>
 
                 </td>
@@ -62,14 +85,8 @@
 
             <input class="queryform" :placeholder="speech" readonly>
         </div>
-        <div class="_4rv4">
-          <i class="material-icons iiicon">tag_faces</i>
-          <ul v-for="(src, index) in emojiImgSrc">
-            <li >
-              <img v-on:click="query = emoji[index]" alt="" :src="`img/${src}.png`"/>
-            </li>
-          </ul>
-        </div>
+        <EmojiPicker :emojiImgSrc="emojiImgSrc" :insertSmiley="inserSmiley"/>
+
 
 
 
@@ -80,13 +97,15 @@
 
 <script>
 import Emoji from './Emoji.vue'
+import EmojiPicker from './EmojiPicker.vue'
 import { ApiAiClient } from 'api-ai-javascript'
 const client = new ApiAiClient({accessToken: 'f0e65dc0f2614efd8844fc233f19ba28'}) // <- replace it with yours
 
 export default {
     name: 'chat',
     components:{
-      Emoji
+      Emoji,
+      EmojiPicker
     },
     mounted(){
       this.loadDataStorage()
@@ -101,8 +120,8 @@ export default {
             micro: false,
             muted: true,
             online: navigator.onLine,
-            emoji: [':)', '=)', ':(', ';)'],
-            emojiImgSrc: ['1f642', '1f60a', '1f61e', '1f609']
+            emoji: [':)', '=)', ':(', ';)', ':-p'],
+            emojiImgSrc: ['1f642', '1f60a', '1f61e', '1f609', '1f61b']
 
         }
     },
@@ -142,6 +161,18 @@ export default {
         }
     },
     methods: {
+        deleteBubble(index){
+          console.log(index, this.answers)
+          this.answers.splice(index, 1);
+          console.log(this.data, 'ok')
+          this.data[this.user].splice(index, 1);
+          localStorage.clear();
+          localStorage.setItem("data", JSON.stringify(this.data))
+
+        },
+        inserSmiley(index){
+          this.query = this.emoji[index]
+        },
         removeSmiley(str){
             this.emoji.forEach(function(element) {
               str = str.replace(element, '<img class="small-emoji" alt="" src="img/'+ this.emojiImgSrc[this.emoji.indexOf(element)] +'.png">')
@@ -311,6 +342,17 @@ $color: #FF9800
 .chat-window
     width: 100%
 
+.delete
+    display: none
+    position: absolute
+    top: .25rem
+    color: #d9d9d9
+    transform: scale(.3)
+    width: 200px
+    padding: 1rem 3rem
+    cursor: pointer
+    vertical-align: middle;
+
 .bubble
     max-width: 300px
     background-color: #0084ff
@@ -318,6 +360,11 @@ $color: #FF9800
     border-radius: 13px
     color: #ffffff
     float: right
+    position: relative
+    word-wrap: break-word
+
+    .delete
+        left: -125px
 
 .bubble.bot
     background-color: #e6e6e6
@@ -330,14 +377,28 @@ $color: #FF9800
     animation-delay: .75s
     animation-fill-mode: forwards
 
+    .delete
+        right: -125px
+        left: auto
+
+.bubble:hover
+    .delete
+        display: inline-block
+
 .small-emoji
     width: 20px
     vertical-align: bottom
     margin: 0 .5rem
 
 .emoji
-  float: right
-  padding: 16px
+    float: right
+    padding: 16px
+    position: relative
+
+.emoji:hover
+    .delete
+        left: -105px
+        display: inline-block
 
 .timestamp
   font-size: 12px
@@ -446,11 +507,7 @@ td
     color: $color
     border-bottom: 2px solid $color
 
-._4rv4
-    padding: .5rem
-    display: flex
-    flex-direction: row-reverse
-    width: 80%
+
 
 
 </style>
